@@ -1,0 +1,103 @@
+---
+title: "Reproducible Report Template - Basic"
+author: "500354333"
+subtitle: "Project 2"
+date: "University of Sydney | Unit of Study | MONTH YEAR"
+output:
+  html_document:
+    fig_caption: yes
+    number_sections: yes
+    self_contained: yes
+    theme: flatly
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    code_folding: hide
+---
+
+<br>
+
+# Executive Summary
+Different rental prices of a property has it own benefits for the renters,such as more strategic location or how spacious is the property.But my aim for this report is to find how price might effect the number of bedrooms that we got in a property  
+<br>
+
+# Full Report
+
+## Initial Data Analysis (IDA)
+```{r}
+airbnb=read.csv("listingsSMALL.csv")
+
+# Quick look at top 5 rows of data
+head(airbnb)
+
+## Size of data
+dim(airbnb)
+
+## R's classification of data
+class(airbnb)
+
+## R's classification of variables
+str(airbnb)
+
+```
+
+
+
+Read about the [airbnb data set](http://www.maths.usyd.edu.au/u/UG/JM/DATA1001/r/current/projects/2020data/listingsSMALL.csv).
+
+Summary:
+The data was found in DATA1001(Project2) at Canvas which scrapped from insideairbnb website. The data contain 64 column and also 40434 row,I conclude that rows represent participants and column represent the factors.The data contain N/A value which cause inacuraccy,since the data is incomplete.The data validity is base at the time that the data are being scrapped,the data changed everyday as people rent in and out,overall insideairbnb website gave good detail about method that they use to measure the factors that can be found in "The occupancy model" on the website.
+
+<br>
+
+## Research Question 1
+
+# Exploring Data
+
+
+Price_per_day is the independent and Number_of_bedrooms is the dependant variable. Both of them are quantitative and numeric type of variable. First, I clean the N/A data from both variables. Then, I make scatterplot and mark one of the point in the graph (red dot) and it represent the mean of Price_per_day(174.8) and Number_of_bedrooms(1.5).Does this two variable correlate each other? The blue line show linear correlation between the two variable,and I calculate the correlation which give result of 0.629 ,which indicate moderate correlation, the correlation should be higher  since there is an outlier, which is the 40 bedrooms in Number_of_bedrooms .Also the equation of line help me to predict for $600 price how many bedrooms that I get? The result is around 3.3 rooms which should be round off to between 3 or 4 bedrooms.Residual plot shows that the spread of differences between predicted and actual data is heteroscedatic.
+
+# Domain Knowledge
+
+
+An owner will get property with more bedrooms when they are willing to pay a higher price.According to Raywhite,an extra room increases property price by on average $95,000.This would also effect the rent price as owner charge more to renter to get back money they spent on the property.However, this is not always the case because graph from propertyvalue shows that the NSW state property is more expensive by $55k compared to VIC state property, this shows that people are willing to pay more for strategic house locations and not just the number of bedrooms in the property. 
+```{r}
+#Cleaning the N/a data,take price and bedrooms to a subset and change the type of the variables to numeric 
+library(ggplot2)
+c=colnames(airbnb)
+ss=subset(airbnb,select =c('price','bedrooms'))
+ss$price = gsub("\\$","",ss$price)
+ss$price=as.numeric(as.character(ss$price))
+ss$bedrooms=as.numeric(as.character(ss$bedrooms))
+ss=ss[!is.na(ss$price) & !is.na(ss$bedrooms),]
+head(ss,5)
+
+p=ss$price
+b=ss$bedrooms
+#Making scatterplot,linear regression(blue) and also mark average mean point(red)
+ggplot(ss,aes(price,bedrooms,colour=price))+geom_point()+geom_smooth(method = "lm",colour="blue",se=FALSE,size=1)+labs(x ="Price_per_day",y ="Number_of_bedrooms")+ggtitle("Comparison between Price_per_day and Number_of_bedrooms")+geom_point(aes(x=mean(p),y=mean(b)),colour="red")
+
+#Find the equation of linear regression line
+r=cor(ss$price,ss$bedrooms)
+r
+L=lm(b~p)
+L$coefficients
+#Find Number of bedroom when the rental price is 600
+unname(L$coefficients[1])+unname(L$coefficients[2])*600
+
+#rmserror(Mean of difference between predicted data and actual data)
+sqrt(1-((r)^2))*sd(b)
+#Plot the residual plot
+ggplot(lm(bedrooms~price,data=ss))+geom_point(aes(x=.fitted,y=.resid))+ geom_hline(yintercept=0, color = "red")+ggtitle("Residual_plot")
+```
+
+
+# References (if needed)
+Inside Airbnb. (2020). How is Airbnb really being used in and affecting the neighbourhoods of your city?. Retrieved from http://insideairbnb.com/index.html
+
+Proverty Value. (2020). State of Nation [Graphs]. Confident decisions Better Buying. Retrieved from https://www.propertyvalue.com.au/
+
+Raywhite. (2020). Does Adding a Bedroom Really Increase Your Property’s Value?. Retrieved from https://www.raywhite.com/blog/does-adding-a-bedroom-really-increase-your-propertys-value/
+
+Warren, D. (2020). DATA1001 Foundations of Data Science, lecture 13, week 5: Linear Regression [Lecture PowerPoint Slides]. Retrieved from http://www.maths.usyd.edu.au/u/UG/JM/DATA1001/r/current/lectures/17.Regression.html#1
+

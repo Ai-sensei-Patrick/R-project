@@ -1,0 +1,106 @@
+---
+title: 'What ype of Airplane that could fulfill the future'
+author: "500354333"
+subtitle: "Project 3"
+date: "University of Sydney | DATA1001 | April 2020"
+output:
+  html_document:
+    fig_caption: yes
+    number_sections: yes
+    self_contained: yes
+    theme: flatly
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    code_folding: hide
+---
+
+<br>
+#Recommendation
+This data would be represented to the CEO of Qantas Airways.In the absence of COVID-19,Qantas Airways is going to buy aircraft from a manufacture,This aircraft projected to fulfill the market for the next 10 years.There are two type of airplane (big and small),I assume big aircraft have a maximum capacity of 400 and small aircraft have a capacity of 200,based on my analysis,I recommend buying equal amount of smaller and bigger plane.
+
+<br>
+
+# Evidence
+Im assuming Max_seats in here is the total maximum seats an Airplane have for multiple flight and All_flight are number of flight to destination with the same Airways in one month,Year indicate in what year the flight occur.From the (source) i know that Port_country mean international uplift or discharge port.
+
+```{r}
+# Read in your data
+flights = read.csv('flights.csv')
+## Quick snapshot
+dim(flights)
+str(flights)
+head(flights,5)
+```
+
+
+```{r warning=TRUE}
+library(ggplot2)
+library(tidyverse)
+library(viridis)
+library(dplyr)
+#Make the the data appear only for specific country ('Canada','China','Hong Kong (SAR)','Indonesia','Japan','New Caledonia','New Zealand','Philliphines','Singapore','South Africa','Thailand','UK','USA')
+flight1=flights %>% 
+  filter(Year%in%c('2017','2007'),Port_Country%in%c('Canada','China','Hong Kong (SAR)','Indonesia','Japan','New Caledonia','New Zealand','Philliphines','Singapore','South Africa','Thailand','UK','USA'))%>%
+  select(Airline,Port_Country,Max_Seats,All_Flights,Year)
+
+
+#Make the the data only for Qantas Airways on year 2017 and 2007, Make Country that appear are ('Canada','China','Hong Kong (SAR)','Indonesia','Japan','New Caledonia','New Zealand','Philliphines','Singapore','South Africa','Thailand','UK','USA')
+flight2=flights %>%
+  filter(Airline =='Qantas Airways',Year%in%c('2017','2007'),Port_Country%in%c('Indonesia','New Zealand','Singapore','China','Canada','Hong Kong (SAR)'))%>%
+  select(Airline,Port_Country,Max_Seats,All_Flights,Year)
+
+
+#Make the the data Qantas Airways is not included in year 2017 and 2007 and only specific country choosen
+flight3=flights %>% 
+  filter(Airline!='Qantas Airways',Year%in%c('2017','2007'),Port_Country%in%c('Indonesia','New Zealand','Singapore','China','Canada','Hong Kong (SAR)'))%>%
+  select(Airline,Port_Country,Max_Seats,All_Flights,Year)
+
+
+#Make the comparison bargraph number of flight in 2017 and 2007 for Global
+flight1 %>% group_by(Port_Country,Year)%>%summarise(Total_flight=sum(All_Flights)) %>% 
+  ggplot()+aes(x =Port_Country,y = Total_flight,fill=factor(Year))+geom_bar(stat = "identity", position = "dodge")+
+  theme(plot.title = element_text(size = 25, hjust = 0.5)) + scale_fill_manual(values=c('blue','gold'))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +labs(title='Global comparison number of flight\n in 2017 and 2007',x ='Destination',y ='Total_flight_in_a_year',fill='Year')+theme(panel.background = element_rect(fill = "dark grey"))
+
+```
+
+2007 and 2017 is choosen because They are the year with a complete whole year data.I choose all destination with increasing number of flight.This indicate Qantas Airways have to increase the number of aircraft in this route in future.
+```{r}
+
+#Find Average seats available per flight for each destination by finding the sum of all flight in group 
+flight2 %>% group_by(Port_Country,Year) %>%   summarise(N_seats=sum(Max_Seats),Av_flight=sum(All_Flights),Av_seats=(N_seats/Av_flight))%>%
+  ggplot()+
+  aes(x = Port_Country, y = Av_seats,fill=factor(Year))+
+  geom_bar(stat = "identity",position="dodge")+labs(title = 'Qantas airplane seats for international\ndestination from Australia',size=40, x = 'Destination', y = 'Average_seats_availabe_per_flight',fill='Year')+  
+  theme(plot.title = element_text(size = 25, hjust = 0.5)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+scale_fill_manual(values=c('red','white'))+theme(panel.background = element_rect(fill = "dark grey"))
+
+
+
+#Find Average seats available per flight for each destination by finding the sum of all flight in group 
+flight3 %>% group_by(Port_Country,Year) %>%   summarise(N_seats=sum(Max_Seats),Av_flight=sum(All_Flights),Av_seats=(N_seats/Av_flight))%>%
+  ggplot()+
+  aes(x = Port_Country, y = Av_seats,fill=factor(Year))+
+  geom_bar(stat = "identity",position="dodge")+labs(title = 'Global airplane seats for international\ndestination from Australia',size=40, x = 'Destination', y = 'Average_seats_availabe_per_flight',fill='Year')+  
+  theme(plot.title = element_text(size = 25, hjust = 0.5)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+scale_fill_manual(values=c('blue','gold'))+theme(panel.background = element_rect(fill = "dark grey"))
+
+```
+From data above,Average_seats_availabe_per_flight to New Zealand for Qantas is remain constant roughly about 200 but the global airplane slightly increase ,I recommend we should keep capacity of plane to New_zealand as it only a short flight from Australian city.The Average_seats_availabe_per_flight to China should increase as the global airlines trend is to increase the number of Average_seats_availabe_per_flight to China,as China is a long flight from Australian city.So based on my finding overall we should equally buy bigger and smaller airplane as number of flight that increase are a long flight route,but singapore which is a long flight has decrease in number of seats this could indicate that they are using smaller plane to Singapore.
+
+# Other Evidence 
+According to Forbes, smaller airplane are now getting impressive, they could travel more further and now they have more spaces for passenger.Smaller airplane also require less passenger to flight since they are more fuel efficient.
+in the NY Times article said that 1/3 airplane in American airport is a small airplane.This indicate that the small airplane is the future of the aircraft industry especially for a short flight.
+
+#Reference
+Australian Government Bureau of Infrastructure, Transport and Regional Economics. (2020). International Airlines – Operated Flights and Seats [Data Sets]. Retrieved from https://data.gov.au/dataset/ds-dga-e82787e4-a480-4189-b963-1d0b6088103e/details
+Belson, K. (2009, May 6). Increasingly, It's A Tight Squeeze In The Air. The New York Times.Retrieved from https://www.nytimes.com/2009/05/07/business/businessspecial/07region.html
+Leigh, G. (2019, July 9). Small Planes On Long Flights: Why Single-Aisle Longhaul Is A Good Thing. Forbes Media. Retrieved from https://www.forbes.com/sites/gabrielleigh/2019/07/09/small-planes-on-long-flights/#e6d3f0c1c3a7
+Negroni, C. (2020, February 19). Aircraft, Big and Small, Are Changing Our Relationship With Flight. The New York Times. Retrieved 
+
+
+
+
+
+*Max 100 words: Cites at least 2 related articles (research or media) that add weight, subtlety or limitations to the evidence from data.*
